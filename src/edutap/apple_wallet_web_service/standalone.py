@@ -1,3 +1,4 @@
+from .service import router
 from .config import AppleWalletWebServiceSettings
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
@@ -20,7 +21,8 @@ settings = AppleWalletWebServiceSettings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initializing
-    await setup(app)
+    
+    app.include_router(router)
 
     logger.info("creating stream processor for google wallet notifications")
     # asyncio.create_task(
@@ -65,8 +67,8 @@ async def test_message(request: Request, msg: str):
 
 def main():
     uvicorn.run(
-        "edutap.google_wallet_callback_handler.standalone:app",
-        host="127.0.0.1",
+        "edutap.apple_wallet_web_service.standalone:app",
+        host="0.0.0.0",
         port=8084,
         log_level="debug",
         reload=True,
