@@ -1,0 +1,91 @@
+[project]
+name = "edutap.apple_wallet_web_service"
+version = "1.0.0.dev0"
+description = "A Apple Wallet Web Service Implementation."
+keywords = ["wallet", "apple", "web update service", ]
+readme = "README.md"
+authors = [
+    {name = "Philipp Auersperg-Castell", email = "phil@bluedynamics.com"},
+    {name = "Alexander Loechel", email = "Alexander.Loechel@lmu.de"},
+]
+requires-python = ">=3.10"
+license = { text = "EUPL 1.2" }
+classifiers = [
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: European Union Public Licence 1.2 (EUPL 1.2)",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Object Brokering",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "pydantic[email,dotenv]>=2.0",
+    "pydantic-settings",
+    "requests",
+  ]
+
+[project.urls]
+Source = "https://github.com/edutap-eu/edutap.apple_wallet_web_service"
+Issues = "https://github.com/edutap-eu/edutap.apple_wallet_web_service/issues"
+Documentation = "https://docs.edutap.eu/packages/edutap_apple_wallet_web_service/index.html"
+
+[project.optional-dependencies]
+fastapi = [
+    "fastapi",
+    "uvicorn[standard]",
+]
+kafka = [
+    "aiokafka",
+]
+test = [
+    "pytest",
+    "requests-mock",
+]
+typecheck  = [
+    "mypy",
+    "types-requests",
+    "pytest-stub",
+]
+develop = [
+    "pdbpp",
+    "ipython",
+]
+
+[project.scripts]
+web_service = "edutap.apple_wallet_web_service.standalone:main"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = [
+    "tests",
+]
+
+[tool.isort]
+profile = "plone"
+
+[tool.black]
+target-version = ["py310"]
+include = "src"
+
+[tool.codespell]
+ignore-words-list = "discreet,"
+
+[tool.check-manifest]
+ignore = [
+    ".editorconfig",
+    ".pre-commit-config.yaml",
+    "tox.ini",
+    "mypy.ini",
+    ".flake8",
+    "mx.ini",
+]
