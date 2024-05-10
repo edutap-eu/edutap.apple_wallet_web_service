@@ -1,0 +1,40 @@
+{
+    // Verwendet IntelliSense zum Ermitteln möglicher Attribute.
+    // Zeigen Sie auf vorhandene Attribute, um die zugehörigen Beschreibungen anzuzeigen.
+    // Weitere Informationen finden Sie unter https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python-Debugger: fastAPI",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "uvicorn",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "edutap.demo_service.main:app",
+                "--reload",
+                "--host",
+                "0.0.0.0",
+                "--port",
+                "9000"
+            ],
+            "jinja": true,
+            "justMyCode": false
+        },
+        {
+            "name": "Python-Debugger: Remote Attach to fastAPI",
+            "type": "debugpy",
+            "request": "attach",
+            "port": 5678,
+            "host": "localhost",
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/app"
+                }
+            ],
+            "jinja": true,
+            "justMyCode": false
+        }
+    ]
+}
