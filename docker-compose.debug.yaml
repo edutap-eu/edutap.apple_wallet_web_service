@@ -1,0 +1,49 @@
+version: "3"
+
+services:
+
+  # FastAPI server handling the callback
+  apple-wallet-web-service:
+    container_name: apple-wallet-web-service
+    dns:
+      ${DNS:-8.8.8.8}
+    # image: ghcr.io/edutap-eu/edutap.apple_wallet_web_service:latest
+    build:
+      context: .
+      args:
+        - HTTP_PORT=${HTTP_PORT:-80}
+    command:
+      ["sh", "-c", "pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 -m uvicorn edutap.apple_wallet_web_service.standalone:app  --access-log --proxy-headers --reload --host 0.0.0.0 --port 8084"]
+    ports:
+      - "${HTTP_PORT:-8084}:${HTTP_PORT:-80}"
+      - "5678:5678"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.apple-wallet-web-service.rule=Host(`${DOMAIN}`) && PathPrefix(`/`)"
+      - "traefik.http.routers.apple-wallet-web-service.entrypoints=websecure"
+      - "traefik.http.routers.apple-wallet-web-service.entrypoints=https"
+      - "traefik.http.routers.apple-wallet-web-service.tls=true"
+      - "traefik.http.routers.apple-wallet-web-service.tls.domains[0].main=${DOMAIN}"
+      - "traefik.http.routers.apple-wallet-web-service.tls.certresolver=le"
+
+  traefik:
+    image: "traefik:latest"
+    container_name: "apple-wallet-web-service-traefik"
+    dns:
+      ${DNS:-8.8.8.8}
+
+    depends_on:
+      - apple-wallet-web-service
+
+    command:
+      - "--providers.file.filename=/traefik.yaml"
+      - "--log.level=DEBUG"
+
+    ports:
+      - "80:80"
+      - "${HTTPS_PORT:-8443}:443"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./letsencrypt/${DOMAIN}:/letsencrypt"
+      - "./traefik.yaml:/traefik.yaml"

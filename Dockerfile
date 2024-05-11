@@ -20,6 +20,6 @@ COPY src /app/src
 COPY pyproject.toml /app
 
 # RUN python3 -m venv venv
-RUN pip install --no-cache-dir -e "/app[fastapi, kafka, develop]"
+RUN pip install --no-cache-dir -e "/app[fastapi,develop]"
 
 CMD ["sh", "-c", "uvicorn edutap.apple_wallet_web_service.standalone:app --proxy-headers --host 0.0.0.0 --port $HTTP_PORT --access-log"]
