@@ -1,5 +1,5 @@
-from .service import router
 from .config import AppleWalletWebServiceSettings
+from .service import router
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi import Request
@@ -21,7 +21,7 @@ settings = AppleWalletWebServiceSettings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initializing
-    
+
     app.include_router(router)
 
     logger.info("creating stream processor for google wallet notifications")

@@ -40,6 +40,11 @@ fastapi = [
 kafka = [
     "aiokafka",
 ]
+sql = [
+    "sqlalchemy",
+    "psycopg2-binary",
+    "sqlmodel",
+]
 test = [
     "pytest",
     "requests-mock",
@@ -79,6 +84,7 @@ include = "src"
 
 [tool.codespell]
 ignore-words-list = "discreet,"
+skip = "*.json"
 
 [tool.check-manifest]
 ignore = [
