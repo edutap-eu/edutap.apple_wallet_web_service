@@ -3,7 +3,6 @@ from edutap.wallet_apple.models import Pass
 from edutap.wallet_apple.models import PassInformation
 from sqlmodel import Field
 from sqlmodel import LargeBinary
-from sqlmodel import SQLModelConfig
 from sqlmodel import SQLModel
 
 
@@ -19,10 +18,7 @@ class AppleDeviceRegistry(SQLModel, table=True):  # type: ignore[call-arg]
 
 
 class ApplePassData(SQLModel, table=True):  # type: ignore[call-arg]
-    model_config = SQLModelConfig(
-        # arbitrary_types_allowed=True,
-        extra="allow",
-    )
+    """ """
 
     passTypeIdentifier: str = Field(primary_key=True)
     serialNumber: str = Field(primary_key=True)
@@ -34,8 +30,6 @@ class ApplePassData(SQLModel, table=True):  # type: ignore[call-arg]
 
 class ApplePassRegistry(SQLModel, table=True):  # type: ignore[call-arg]
     """ """
-
-    model_config = SQLModelConfig(arbitrary_types_allowed=True, extra="allow")
 
     id: int | None = Field(default=None, primary_key=True)
     deviceLibraryIdentitfier: str
