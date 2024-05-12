@@ -4,6 +4,7 @@ from edutap.wallet_apple import PassInformation
 from pydantic import ConfigDict
 from sqlmodel import Field
 from sqlmodel import LargeBinary
+from sqlmodel import SQLConfigDict
 from sqlmodel import SQLModel
 
 
@@ -19,7 +20,10 @@ class AppleDeviceRegistry(SQLModel, table=True):  # type: ignore[call-arg]
 
 
 class ApplePassData(SQLModel, table=True):  # type: ignore[call-arg]
-    model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow")
+    model_config = SQLConfigDict(
+        # arbitrary_types_allowed=True,
+        extra="allow",
+    )
 
     passTypeIdentifier: str = Field(primary_key=True)
     serialNumber: str = Field(primary_key=True)
