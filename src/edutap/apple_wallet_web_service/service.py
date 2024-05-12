@@ -9,6 +9,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 from edutap.wallet_apple.models import Pass
 from fastapi import APIRouter
+from fastapi import Depends
 from fastapi import Header
 from fastapi import logger
 from fastapi import Request
@@ -18,14 +19,29 @@ from sqlmodel import create_engine
 from sqlmodel import select
 from sqlmodel import Session
 from typing import Annotated
+from typing import Generator
 
 
-settings: AppleWalletWebServiceSettings = AppleWalletWebServiceSettings()
-session: Session
 logfile = Path
 registeredAuthTokens = [
     "1234567890abcdef",
 ]
+
+
+def get_settings() -> Generator[AppleWalletWebServiceSettings]:
+    print("Read AppleWalletWebServiceSettings")
+    settings: AppleWalletWebServiceSettings = AppleWalletWebServiceSettings()
+    yield settings
+
+
+def get_session() -> Generator[Session]:
+    print("Create Session")
+    settings: AppleWalletWebServiceSettings = AppleWalletWebServiceSettings()
+    engine = create_engine(
+        f"{settings.db.type}+{settings.db.driver}://{settings.db.username}:{settings.db.password}@{settings.db.host}{':' + str(settings.db.port) if settings.db.port != 5432 else ''}"
+    )
+    with Session(engine) as session:
+        yield session
 
 
 @asynccontextmanager
@@ -54,8 +70,10 @@ router = APIRouter(
 )
 
 
-def check_authentification_token(authorization_header_string: str | None) -> bool:
-    if settings.auth_required:
+def check_authentification_token(
+    authorization_header_string: str | None, auth_required: bool = True
+) -> bool:
+    if auth_required:
         if authorization_header_string is not None:
             authType, authToken = authorization_header_string.split()
             if authType != "ApplePass":
@@ -82,6 +100,9 @@ async def register_pass(
     serialNumber: str,
     authorization: Annotated[str | None, Header()] = None,
     data: AppleWalletWebServiceAuthorizationPayload | None = None,
+    *,
+    settings: AppleWalletWebServiceSettings = Depends(get_settings),
+    session: Session = Depends(get_session),
 ):
     """
     Registration: register a device to receive push notifications for a pass.
@@ -128,7 +149,7 @@ async def register_pass(
     logger.debug(f"{data=}")
     logger.debug(f"{request.__dict__}")
 
-    if not check_authentification_token(authorization):
+    if not check_authentification_token(authorization, settings.auth_required):
         return Response(status_code=401)
 
     # Register Device
@@ -178,6 +199,9 @@ async def update_pass(
     passTypeIdentifier: str,
     passesUpdatedSince: str | None = None,
     authorization: Annotated[str | None, Header()] = None,
+    *,
+    settings: AppleWalletWebServiceSettings = Depends(get_settings),
+    session: Session = Depends(get_session),
 ):
     """
     Get List of Updatable Passes
@@ -250,6 +274,9 @@ async def unregister_pass(
     passTypeIdentifier: str,
     serialNumber: str,
     authorization: Annotated[str | None, Header()] = None,
+    *,
+    settings: AppleWalletWebServiceSettings = Depends(get_settings),
+    session: Session = Depends(get_session),
 ):
     """
     Unregister
@@ -300,6 +327,9 @@ async def send_updated_pass(
     passTypeIdentifier: str,
     serialNumber: str,
     authorization: Annotated[str | None, Header()] = None,
+    *,
+    settings: AppleWalletWebServiceSettings = Depends(get_settings),
+    session: Session = Depends(get_session),
 ):
     """
     Pass delivery
@@ -352,6 +382,8 @@ async def send_updated_pass(
 async def device_log(
     request: Request,
     data: LogEntries,
+    *,
+    settings: AppleWalletWebServiceSettings = Depends(get_settings),
 ):
     """
     Logging/Debugging from the device
@@ -362,6 +394,7 @@ async def device_log(
 
     server response: 200
     """
+
     logger.debug(f"logs: {data.logs=}")
     logfile = settings.log_file_path
 
