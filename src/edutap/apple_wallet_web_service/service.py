@@ -19,6 +19,7 @@ from sqlmodel import create_engine
 from sqlmodel import select
 from sqlmodel import Session
 from typing import Annotated
+from typing import Any
 from typing import Generator
 
 
@@ -28,13 +29,13 @@ registeredAuthTokens = [
 ]
 
 
-def get_settings() -> Generator[AppleWalletWebServiceSettings]:
+def get_settings() -> AppleWalletWebServiceSettings:
     print("Read AppleWalletWebServiceSettings")
     settings: AppleWalletWebServiceSettings = AppleWalletWebServiceSettings()
-    yield settings
+    return settings
 
 
-def get_session() -> Generator[Session]:
+def get_session() -> Generator[Session, Any, Any]:
     print("Create Session")
     settings: AppleWalletWebServiceSettings = AppleWalletWebServiceSettings()
     engine = create_engine(
@@ -47,21 +48,8 @@ def get_session() -> Generator[Session]:
 @asynccontextmanager
 async def lifespan(router: APIRouter):
     # setup phase
-    global logfile
-    global settings
-    settings
-
-    logfile = settings.log_file_path
-    engine = create_engine(
-        f"{settings.db.type}+{settings.db.driver}://{settings.db.username}:{settings.db.password}@{settings.db.host}{':' + str(settings.db.port) if settings.db.port != 5432 else ''}"
-    )
-    global session
-
-    session = Session(engine)
-
     yield
     # shutdown
-    session.close()
 
 
 router = APIRouter(
