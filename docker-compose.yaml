@@ -26,6 +26,51 @@ services:
       - "traefik.http.routers.apple-wallet-web-service.tls.domains[0].main=${DOMAIN}"
       - "traefik.http.routers.apple-wallet-web-service.tls.certresolver=le"
 
+  apple-wallet-web-service-db:
+    container_name: apple-wallet-web-service-db
+    image: "postgres:latest"
+    restart: always
+    ports:
+     - '5432:5432'
+    volumes:
+      - ./db/data/apple_wallet_web_service:/var/lib/postgresql/data
+      - ./db/import:/docker-entrypoint-initdb.d
+    environment:
+      - POSTGRES_DB=${EDUTAP_WALLET_APPLE_WALLET_WEB_SERVICE_DB_NAME}
+      - POSTGRES_USER=${EDUTAP_WALLET_APPLE_WALLET_WEB_SERVICE_DB_USERNAME}
+      - POSTGRES_PASSWORD=${EDUTAP_WALLET_APPLE_WALLET_WEB_SERVICE_DB_PASSWORD}
+
+  pgadmin:
+      container_name: pgadmin4_container
+      image: dpage/pgadmin4
+      restart: always
+      environment:
+        - TOOLS_PASSWORD=${TOOLS_PASSWORD:-password}
+        - PGADMIN_DEFAULT_EMAIL=${POSTGRES_USER}@edutap.eu
+        - PGADMIN_DEFAULT_PASSWORD=${TOOLS_PASSWORD:-password}
+        - SCRIPT_NAME=/pgadmin
+        - PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=False
+      ports:
+        - "5050:80"
+      deploy:
+        placement:
+          constraints: [node.role == manager]
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.pgadmin4_container.rule=Host(`${DOMAIN}`) && PathPrefix(`/pgadmin`)"
+        - "traefik.http.routers.pgadmin4_container.entrypoints=websecure"
+        - "traefik.http.routers.pgadmin4_container.entrypoints=https"
+        - "traefik.http.routers.pgadmin4_container.tls=true"
+        - "traefik.http.routers.pgadmin4_container.tls.certresolver=le"
+      volumes:
+        - "./pgadmin/servers.json://pgadmin4/servers.json"
+
+      command:
+        - /bin/sh
+        - -c
+        - |
+          /usr/bin/python3 /pgadmin4/setup.py --load-servers /pgadmin4/servers.json --user ${POSTGRES_USER} --password ${POSTGRES_PASSWORD}
+
   # The fastapi server pushes the callback data to kafka
   kafka:
     container_name: kafka
