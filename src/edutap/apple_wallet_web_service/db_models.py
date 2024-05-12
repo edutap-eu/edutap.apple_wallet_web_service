@@ -23,9 +23,9 @@ class ApplePassData(SQLModel, table=True):  # type: ignore[call-arg]
     passTypeIdentifier: str = Field(primary_key=True)
     serialNumber: str = Field(primary_key=True)
     lastUpdateTag: datetime
-    passObj: Pass
-    passData: PassInformation
-    passFiles: list[LargeBinary]
+    # passObj: Pass
+    # passData: PassInformation
+    # passFiles: list[LargeBinary]
 
 
 class ApplePassRegistry(SQLModel, table=True):  # type: ignore[call-arg]

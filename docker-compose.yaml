@@ -17,6 +17,11 @@ services:
       - "${HTTP_PORT:-8084}:${HTTP_PORT:-80}"
     volumes:
       - "./logs:/var/log/apple_wallet_web_service"
+    environment:
+      - EDUTAP_WALLET_APPLE_WALLET_WEB_SERVICE_DB_HOST=${EDUTAP_WALLET_APPLE_WALLET_WEB_SERVICE_DB_HOST}
+      - EDUTAP_WALLET_APPLE_WALLET_WEB_SERVICE_DB_NAME=${EDUTAP_WALLET_APPLE_WALLET_WEB_SERVICE_DB_NAME}
+      - EDUTAP_WALLET_APPLE_WALLET_WEB_SERVICE_DB_USERNAME=${EDUTAP_WALLET_APPLE_WALLET_WEB_SERVICE_DB_USERNAME}
+      - EDUTAP_WALLET_APPLE_WALLET_WEB_SERVICE_DB_PASSWORD=${EDUTAP_WALLET_APPLE_WALLET_WEB_SERVICE_DB_PASSWORD}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.apple-wallet-web-service.rule=Host(`${DOMAIN}`) && PathPrefix(`/`)"
@@ -46,7 +51,7 @@ services:
       restart: always
       environment:
         - TOOLS_PASSWORD=${TOOLS_PASSWORD:-password}
-        - PGADMIN_DEFAULT_EMAIL=${POSTGRES_USER}@edutap.eu
+        - PGADMIN_DEFAULT_EMAIL=${TOOLS_USERNAME}@edutap.eu
         - PGADMIN_DEFAULT_PASSWORD=${TOOLS_PASSWORD:-password}
         - SCRIPT_NAME=/pgadmin
         - PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=False
@@ -69,7 +74,7 @@ services:
         - /bin/sh
         - -c
         - |
-          /usr/bin/python3 /pgadmin4/setup.py --load-servers /pgadmin4/servers.json --user ${POSTGRES_USER} --password ${POSTGRES_PASSWORD}
+          /usr/bin/python3 /pgadmin4/setup.py --load-servers /pgadmin4/servers.json --user ${EDUTAP_WALLET_APPLE_WALLET_WEB_SERVICE_DB_USERNAME} --password ${EDUTAP_WALLET_APPLE_WALLET_WEB_SERVICE_DB_PASSWORD}
 
   # The fastapi server pushes the callback data to kafka
   kafka:

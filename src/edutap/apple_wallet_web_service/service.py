@@ -25,6 +25,7 @@ from typing import Generator
 
 logfile = Path
 registeredAuthTokens = [
+    "b5b2597a1c5aa2c6019aa065922785d54760a784b98731c344b4fd1eb6dd8eed",
     "1234567890abcdef",
 ]
 
@@ -32,15 +33,20 @@ registeredAuthTokens = [
 def get_settings() -> AppleWalletWebServiceSettings:
     print("Read AppleWalletWebServiceSettings")
     settings: AppleWalletWebServiceSettings = AppleWalletWebServiceSettings()
+    print(settings)
     return settings
 
 
 def get_session() -> Generator[Session, Any, Any]:
-    print("Create Session")
+    print("Read Settings for create session")
     settings: AppleWalletWebServiceSettings = AppleWalletWebServiceSettings()
+    print(settings)
+
+    print("Create Engine")
     engine = create_engine(
         f"{settings.db.type}+{settings.db.driver}://{settings.db.username}:{settings.db.password}@{settings.db.host}{':' + str(settings.db.port) if settings.db.port != 5432 else ''}"
     )
+    print("Create Session")
     with Session(engine) as session:
         yield session
 
@@ -129,13 +135,13 @@ async def register_pass(
     :return:
     """
 
-    logger.debug("register pass:")
-    logger.debug(f"{deviceLibraryIdentitfier=}")
-    logger.debug(f"{passTypeIdentifier=}")
-    logger.debug(f"{serialNumber=}")
-    logger.debug(f"{authorization=}")
-    logger.debug(f"{data=}")
-    logger.debug(f"{request.__dict__}")
+    print("register pass:")
+    print(f"{deviceLibraryIdentitfier=}")
+    print(f"{passTypeIdentifier=}")
+    print(f"{serialNumber=}")
+    print(f"{authorization=}")
+    print(f"{data=}")
+    print(f"{request.__dict__}")
 
     if not check_authentification_token(authorization, settings.auth_required):
         return Response(status_code=401)
@@ -173,10 +179,10 @@ async def register_pass(
         session.add(new_entry)
         session.commit()
 
-        logger.debug(f"write pass to registry: {new_entry}")
+        print(f"write pass to registry: {new_entry}")
         return Response(status_code=201)
 
-    logger.debug(f"pass {db_entry} already exists.")
+    print(f"pass {db_entry} already exists.")
     return Response(status_code=200)
 
 
@@ -216,12 +222,12 @@ async def update_pass(
 
     """
 
-    logger.debug("update pass:")
-    logger.debug(f"{deviceLibraryIdentitfier=}")
-    logger.debug(f"{passTypeIdentifier=}")
-    logger.debug(f"{passesUpdatedSince=}")
-    logger.debug(f"{authorization=}")
-    logger.debug(f"{request.__dict__}")
+    print("update pass:")
+    print(f"{deviceLibraryIdentitfier=}")
+    print(f"{passTypeIdentifier=}")
+    print(f"{passesUpdatedSince=}")
+    print(f"{authorization=}")
+    print(f"{request.__dict__}")
 
     if not check_authentification_token(authorization):
         return Response(status_code=401)
@@ -280,13 +286,13 @@ async def unregister_pass(
     --> if not authorized: 401
 
     """
-    logger.debug("unregister pass:")
+    print("unregister pass:")
 
-    logger.debug(f"{deviceLibraryIdentitfier=}")
-    logger.debug(f"{passTypeIdentifier=}")
-    logger.debug(f"{serialNumber=}")
-    logger.debug(f"{authorization=}")
-    logger.debug(f"{request.__dict__}")
+    print(f"{deviceLibraryIdentitfier=}")
+    print(f"{passTypeIdentifier=}")
+    print(f"{serialNumber=}")
+    print(f"{authorization=}")
+    print(f"{request.__dict__}")
 
     if not check_authentification_token(authorization):
         return Response(status_code=401)
@@ -329,11 +335,11 @@ async def send_updated_pass(
     --> if auth token is correct: 200, with pass data payload as pkpass-file
     --> if auth token is incorrect: 401
     """
-    logger.debug("send updated pass:")
-    logger.debug(f"{passTypeIdentifier=}")
-    logger.debug(f"{serialNumber=}")
-    logger.debug(f"{authorization=}")
-    logger.debug(f"{request.__dict__=}")
+    print("send updated pass:")
+    print(f"{passTypeIdentifier=}")
+    print(f"{serialNumber=}")
+    print(f"{authorization=}")
+    print(f"{request.__dict__=}")
 
     if not check_authentification_token(authorization):
         return Response(status_code=401)
@@ -383,7 +389,7 @@ async def device_log(
     server response: 200
     """
 
-    logger.debug(f"logs: {data.logs=}")
+    print(f"logs: {data.logs=}")
     logfile = settings.log_file_path
 
     with logfile.open(mode="a") as output:
