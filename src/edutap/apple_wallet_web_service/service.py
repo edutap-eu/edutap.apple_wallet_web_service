@@ -363,7 +363,7 @@ async def device_log(
     server response: 200
     """
     logger.debug(f"logs: {data.logs=}")
-    logfile = settings.log_file
+    logfile = settings.log_file_path
 
     with logfile.open(mode="a") as output:
         for line in data.logs:

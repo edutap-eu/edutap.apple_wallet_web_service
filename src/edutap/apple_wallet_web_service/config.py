@@ -33,7 +33,13 @@ class AppleWalletWebServiceSettings(BaseSettings):
     )
 
     auth_required: bool = True
-    log_file: Path
+    log_file_path: Path = Path(
+        "/"
+        / "var"
+        / "log"
+        / "apple_wallet_web_service"
+        / "apple-wallet-web-service.log"
+    )
 
     apple: AppleWalletSettings = AppleWalletSettings()
     db: DatabaseSettings = DatabaseSettings()
