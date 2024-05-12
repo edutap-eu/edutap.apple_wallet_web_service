@@ -24,6 +24,7 @@ classifiers = [
 dependencies = [
     "pydantic[email,dotenv]>=2.0",
     "pydantic-settings",
+    "edutap.wallet_apple",
     "requests",
   ]
 

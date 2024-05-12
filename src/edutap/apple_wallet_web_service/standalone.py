@@ -6,7 +6,6 @@ from fastapi import Request
 from fastapi.logger import logger
 from importlib.metadata import version
 
-import asyncio
 import uvicorn
 
 
@@ -21,7 +20,6 @@ settings = AppleWalletWebServiceSettings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initializing
-
     app.include_router(router)
 
     logger.info("creating stream processor for google wallet notifications")

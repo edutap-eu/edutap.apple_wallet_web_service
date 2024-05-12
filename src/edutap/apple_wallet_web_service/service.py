@@ -7,19 +7,22 @@ from .http_models import LogEntries
 from .http_models import SerialNumbers
 from contextlib import asynccontextmanager
 from datetime import datetime
+from edutap.wallet_apple.models import Pass
 from fastapi import APIRouter
 from fastapi import Header
 from fastapi import logger
 from fastapi import Request
 from fastapi.responses import Response
+from pathlib import Path
 from sqlmodel import create_engine
 from sqlmodel import select
 from sqlmodel import Session
 from typing import Annotated
 
 
-session = None
-logfile = None
+settings: AppleWalletWebServiceSettings = AppleWalletWebServiceSettings()
+session: Session
+logfile = Path
 registeredAuthTokens = [
     "1234567890abcdef",
 ]
@@ -29,11 +32,12 @@ registeredAuthTokens = [
 async def lifespan(router: APIRouter):
     # setup phase
     global logfile
-    settings = AppleWalletWebServiceSettings()
+    global settings
+    settings
 
     logfile = settings.log_file_path
     engine = create_engine(
-        f"{settings.db_type}+{settings.db_driver}://{settings.db_username}:{settings.db_password}@{settings.db_host}{':' + settings.db_port if settings.db_port != 5432 else ''}"
+        f"{settings.db.type}+{settings.db.driver}://{settings.db.username}:{settings.db.password}@{settings.db.host}{':' + str(settings.db.port) if settings.db.port != 5432 else ''}"
     )
     global session
 
@@ -48,6 +52,20 @@ router = APIRouter(
     prefix="/apple_update_service/v1",
     lifespan=lifespan,
 )
+
+
+def check_authentification_token(authorization_header_string: str | None) -> bool:
+    if settings.auth_required:
+        if authorization_header_string is not None:
+            authType, authToken = authorization_header_string.split()
+            if authType != "ApplePass":
+                return False
+            if authToken not in registeredAuthTokens:
+                return False
+        else:
+            return False
+    return True
+
 
 """
 see: https://developer.apple.com/documentation/walletpasses/adding_a_web_service_to_update_passes
@@ -110,10 +128,26 @@ async def register_pass(
     logger.debug(f"{data=}")
     logger.debug(f"{request.__dict__}")
 
-    authType, authToken = authorization.split()
-    if authToken not in registeredAuthTokens:
+    if not check_authentification_token(authorization):
         return Response(status_code=401)
 
+    # Register Device
+    statement = select(AppleDeviceRegistry).where(
+        AppleDeviceRegistry.deviceLibraryIdentitfier == deviceLibraryIdentitfier
+    )
+    db_device_entry = session.exec(statement)
+    print(db_device_entry)
+    db_device_entry = db_device_entry.first()
+    print(db_device_entry)
+    assert data is not None
+    if db_device_entry is None:
+        new_device_entry = AppleDeviceRegistry(
+            deviceLibraryIdentitfier=deviceLibraryIdentitfier, pushToken=data.pushToken
+        )
+        session.add(new_device_entry)
+        session.commit()
+
+    # Register Pass
     statement = select(ApplePassRegistry).where(
         ApplePassRegistry.deviceLibraryIdentitfier == deviceLibraryIdentitfier
         and ApplePassRegistry.passTypeIdentifier == passTypeIdentifier
@@ -177,13 +211,12 @@ async def update_pass(
     logger.debug(f"{authorization=}")
     logger.debug(f"{request.__dict__}")
 
-    authType, authToken = authorization.split()
-    if authToken not in registeredAuthTokens:
+    if not check_authentification_token(authorization):
         return Response(status_code=401)
 
     updatedSince = datetime(1970, 1, 1)
     if passesUpdatedSince:
-        updatedSince = datetime.fromtimestamp(passesUpdatedSince)
+        updatedSince = datetime.fromtimestamp(float(passesUpdatedSince))
 
     statement = select(ApplePassData).where(
         ApplePassData.passTypeIdentifier == passTypeIdentifier
@@ -240,8 +273,7 @@ async def unregister_pass(
     logger.debug(f"{authorization=}")
     logger.debug(f"{request.__dict__}")
 
-    authType, authToken = authorization.split()
-    if authToken not in registeredAuthTokens:
+    if not check_authentification_token(authorization):
         return Response(status_code=401)
 
     statement = select(ApplePassRegistry).where(
@@ -285,15 +317,41 @@ async def send_updated_pass(
     logger.debug(f"{authorization=}")
     logger.debug(f"{request.__dict__=}")
 
-    return Response(status_code=200)
+    if not check_authentification_token(authorization):
+        return Response(status_code=401)
 
-    return Response(status_code=401)
+    statement = select(ApplePassData).where(
+        ApplePassData.passTypeIdentifier == passTypeIdentifier
+        and ApplePassData.serialNumber == serialNumber
+    )
+    results = session.exec(statement)
+    db_entries = results.all()
+
+    print(db_entries)
+
+    passfile = Pass(db_entries.first().passData)
+
+    zip = passfile.create(
+        settings.apple.certificate,
+        settings.apple.key,
+        settings.apple.wwdr_certificate,
+        settings.apple.password,
+    )
+
+    return Response(
+        zip.getvalue(),
+        status_code=200,
+        media_type="application/vnd.apple.pkpass",
+        headers={
+            "Content-Disposition": f'attachment; filename="{serialNumber}.pkpass"'
+        },
+    )
 
 
 @router.post("/log")
 async def device_log(
     request: Request,
-    data: LogEntries | None = None,
+    data: LogEntries,
 ):
     """
     Logging/Debugging from the device
@@ -305,8 +363,9 @@ async def device_log(
     server response: 200
     """
     logger.debug(f"logs: {data.logs=}")
+    logfile = settings.log_file
 
-    with open(logfile, "a") as output:
+    with logfile.open(mode="a") as output:
         for line in data.logs:
             output.write(line)
 

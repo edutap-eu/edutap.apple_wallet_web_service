@@ -8,6 +8,7 @@ class AppleWalletWebServiceAuthorizationPayload(BaseModel):
 
     see: https://developer.apple.com/documentation/walletpasses/pushtoken
     """
+
     model_config = ConfigDict(
         # extra="forbid",
         # extra="ignore",
@@ -33,9 +34,10 @@ class LogEntries(BaseModel):
 
     see: https://developer.apple.com/documentation/walletpasses/logentries
     """
+
     model_config = ConfigDict(
         # extra="forbid",
         # extra="ignore",
         extra="allow",
     )
-    logs: list[str] | None = []
+    logs: list[str] = []
