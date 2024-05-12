@@ -1,9 +1,8 @@
 from datetime import datetime
 from pydantic import ConfigDict
 from sqlmodel import Field
-from sqlmodel import File
-from sqlmodel import JSON
 from sqlmodel import SQLModel
+from edutap.wallet_apple import Pass, PassInformation
 
 
 # Based on: https://developer.apple.com/documentation/walletpasses/adding_a_web_service_to_update_passes#3733252
@@ -23,8 +22,9 @@ class ApplePassData(SQLModel, table=True):
     passTypeIdentifier: str = Field(primary_key=True)
     serialNumber: str = Field(primary_key=True)
     lastUpdateTag: datetime
-    passData: JSON
-    passFiles: list[File]
+    passObj: Pass
+    passData: PassInformation
+    # passFiles: list[File]
 
 
 class ApplePassRegistry(SQLModel, table=True):
