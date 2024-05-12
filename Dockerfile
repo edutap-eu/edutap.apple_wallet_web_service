@@ -20,7 +20,7 @@ COPY src /app/src
 COPY pyproject.toml /app
 
 RUN apt update
-RUN apt install -y swig
+RUN apt install -y swig libssl-dev
 # RUN python3 -m venv venv
 RUN pip install -U M2Crypto
 RUN pip install -U --no-cache-dir git+https://github.com/edutap-eu/edutap.wallet_apple.git
