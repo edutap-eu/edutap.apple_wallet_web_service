@@ -1,8 +1,7 @@
 from datetime import datetime
+from datetime import timezone
 from edutap.wallet_apple.models import Pass
-from edutap.wallet_apple.models import PassInformation
 from sqlmodel import Field
-from sqlmodel import LargeBinary
 from sqlmodel import SQLModel
 
 
@@ -22,7 +21,8 @@ class ApplePassData(SQLModel, table=True):  # type: ignore[call-arg]
 
     passTypeIdentifier: str = Field(primary_key=True)
     serialNumber: str = Field(primary_key=True)
-    lastUpdateTag: datetime
+    lastUpdateTag: datetime = Field(default_factory=datetime.now(tz=timezone.utc))
+    passfile: Pass
     # passObj: Pass
     # passData: PassInformation
     # passFiles: list[LargeBinary]

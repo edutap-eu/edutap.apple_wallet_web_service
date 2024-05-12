@@ -11,13 +11,13 @@ from edutap.wallet_apple.models import Pass
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import Header
-from fastapi import logger
 from fastapi import Request
 from fastapi.responses import Response
 from pathlib import Path
 from sqlmodel import create_engine
 from sqlmodel import select
 from sqlmodel import Session
+from sqlmodel import SQLModel
 from typing import Annotated
 from typing import Any
 from typing import Generator
@@ -44,8 +44,12 @@ def get_session() -> Generator[Session, Any, Any]:
 
     print("Create Engine")
     engine = create_engine(
-        f"{settings.db.type}+{settings.db.driver}://{settings.db.username}:{settings.db.password}@{settings.db.host}{':' + str(settings.db.port) if settings.db.port != 5432 else ''}"
+        f"{settings.db.type}+{settings.db.driver}://{settings.db.username}:{settings.db.password}@{settings.db.host}{':' + str(settings.db.port) if settings.db.port != 5432 else ''}/{settings.db.name}",
+        echo=True,
     )
+
+    SQLModel.metadata.create_all(engine)
+    print(engine.url)
     print("Create Session")
     with Session(engine) as session:
         yield session
