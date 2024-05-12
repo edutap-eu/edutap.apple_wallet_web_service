@@ -15,7 +15,7 @@ services:
         - BROKER_URL=${BROKER_URL:-kafka:19094}
     ports:
       - "${HTTP_PORT:-8084}:${HTTP_PORT:-80}"
-    valumes:
+    volumes:
       - "./logs:/var/log/apple_wallet_web_service"
     labels:
       - "traefik.enable=true"
