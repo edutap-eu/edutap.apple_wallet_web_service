@@ -394,6 +394,6 @@ async def device_log(
 
     with logfile.open(mode="a") as output:
         for line in data.logs:
-            output.write(line)
+            output.write(line + "\n")
 
     return Response(status_code=200)
