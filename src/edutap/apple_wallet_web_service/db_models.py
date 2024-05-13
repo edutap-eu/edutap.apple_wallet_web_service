@@ -21,7 +21,7 @@ class ApplePassData(SQLModel, table=True):  # type: ignore[call-arg]
 
     passTypeIdentifier: str = Field(primary_key=True)
     serialNumber: str = Field(primary_key=True)
-    lastUpdateTag: datetime = Field(default_factory=datetime.now(tz=timezone.utc))
+    lastUpdateTag: datetime # = Field(default_factory=datetime.now(tz=timezone.utc))
     passfile: Pass
     # passObj: Pass
     # passData: PassInformation
