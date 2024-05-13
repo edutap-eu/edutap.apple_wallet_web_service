@@ -2,6 +2,7 @@ from edutap.wallet_apple.settings import AppleWalletSettings
 from pathlib import Path
 from pydantic_settings import BaseSettings
 from pydantic_settings import SettingsConfigDict
+from pydantic import HttpUrl
 
 
 class DatabaseSettings(BaseSettings):
@@ -40,6 +41,12 @@ class AppleWalletWebServiceSettings(BaseSettings):
         / "apple_wallet_web_service"
         / "apple-wallet-web-service.log"
     )
+
+    url: HttpUrl | None = None
+    authentication_token: str | None = None
+
+    bootstrap_servers: str | None = None
+    topic: str | None = None
 
     apple: AppleWalletSettings = AppleWalletSettings()
     db: DatabaseSettings = DatabaseSettings()
