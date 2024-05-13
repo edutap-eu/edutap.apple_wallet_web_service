@@ -2,6 +2,7 @@ from .config import AppleWalletWebServiceSettings
 from .db_models import AppleDeviceRegistry
 from .db_models import ApplePassData
 from .db_models import ApplePassRegistry
+from .db_models import get_session
 from .http_models import AppleWalletWebServiceAuthorizationPayload
 from .http_models import LogEntries
 from .http_models import SerialNumbers
@@ -14,19 +15,14 @@ from fastapi import Header
 from fastapi import Request
 from fastapi.responses import Response
 from pathlib import Path
-from sqlmodel import create_engine
 from sqlmodel import select
 from sqlmodel import Session
-from sqlmodel import SQLModel
 from typing import Annotated
-from typing import Any
-from typing import Generator
 
 
 logfile = Path
 registeredAuthTokens = [
     "b5b2597a1c5aa2c6019aa065922785d54760a784b98731c344b4fd1eb6dd8eed",
-    "1234567890abcdef",
 ]
 
 
@@ -35,24 +31,6 @@ def get_settings() -> AppleWalletWebServiceSettings:
     settings: AppleWalletWebServiceSettings = AppleWalletWebServiceSettings()
     print(settings)
     return settings
-
-
-def get_session() -> Generator[Session, Any, Any]:
-    print("Read Settings for create session")
-    settings: AppleWalletWebServiceSettings = AppleWalletWebServiceSettings()
-    print(settings)
-
-    print("Create Engine")
-    engine = create_engine(
-        f"{settings.db.type}+{settings.db.driver}://{settings.db.username}:{settings.db.password}@{settings.db.host}{':' + str(settings.db.port) if settings.db.port != 5432 else ''}/{settings.db.name}",
-        echo=True,
-    )
-
-    SQLModel.metadata.create_all(engine)
-    print(engine.url)
-    print("Create Session")
-    with Session(engine) as session:
-        yield session
 
 
 @asynccontextmanager
@@ -145,7 +123,6 @@ async def register_pass(
     print(f"{serialNumber=}")
     print(f"{authorization=}")
     print(f"{data=}")
-    print(f"{request.__dict__}")
 
     if not check_authentification_token(authorization, settings.auth_required):
         return Response(status_code=401)
@@ -231,7 +208,6 @@ async def update_pass(
     print(f"{passTypeIdentifier=}")
     print(f"{passesUpdatedSince=}")
     print(f"{authorization=}")
-    print(f"{request.__dict__}")
 
     if not check_authentification_token(authorization):
         return Response(status_code=401)
@@ -296,7 +272,6 @@ async def unregister_pass(
     print(f"{passTypeIdentifier=}")
     print(f"{serialNumber=}")
     print(f"{authorization=}")
-    print(f"{request.__dict__}")
 
     if not check_authentification_token(authorization):
         return Response(status_code=401)

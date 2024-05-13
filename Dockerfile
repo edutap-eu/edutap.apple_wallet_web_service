@@ -20,6 +20,7 @@ COPY src /app/src
 COPY pyproject.toml /app
 
 RUN apt update
+RUN apt full-upgrade -y
 RUN apt install -y swig libssl-dev
 # RUN python3 -m venv venv
 RUN pip install -U M2Crypto
