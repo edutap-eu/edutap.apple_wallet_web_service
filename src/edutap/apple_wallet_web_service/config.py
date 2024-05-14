@@ -39,7 +39,6 @@ class AppleWalletWebServiceSettings(BaseSettings):
         / "var"
         / "log"
         / "apple_wallet_web_service"
-        / "apple-wallet-web-service.log"
     )
 
     url: HttpUrl | None = None
