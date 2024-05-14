@@ -1,0 +1,3 @@
+# Ignore this directories
+/kafka-data
+/db
