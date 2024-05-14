@@ -127,6 +127,13 @@ async def register_pass(
     if not check_authentification_token(authorization, settings.auth_required):
         return Response(status_code=401)
 
+    assert data is not None
+
+    with (settings.log_file_path / "apple_wallet_web_service_register_device.log").open(mode="a") as output:
+        output.write(f"Register Event for Device: {deviceLibraryIdentitfier=}, {data.pushToken=}\n")
+    with (settings.log_file_path / "apple_wallet_web_service_register_pass.log").open(mode="a") as output:
+        output.write(f"Register Event for Pass: {deviceLibraryIdentitfier=}, {passTypeIdentifier=}, {serialNumber=}\n")
+
     # Register Device
     statement = select(AppleDeviceRegistry).where(
         AppleDeviceRegistry.deviceLibraryIdentitfier == deviceLibraryIdentitfier
@@ -135,7 +142,6 @@ async def register_pass(
     print(db_device_entry)
     db_device_entry = db_device_entry.first()
     print(db_device_entry)
-    assert data is not None
     if db_device_entry is None:
         new_device_entry = AppleDeviceRegistry(
             deviceLibraryIdentitfier=deviceLibraryIdentitfier, pushToken=data.pushToken
@@ -209,6 +215,9 @@ async def update_pass(
     print(f"{passesUpdatedSince=}")
     print(f"{authorization=}")
 
+    with (settings.log_file_path / "apple_wallet_web_service_update_check.log").open(mode="a") as output:
+        output.write(f"Update Check: {deviceLibraryIdentitfier=}, {passTypeIdentifier=}, {passesUpdatedSince=}\n")
+
     if not check_authentification_token(authorization):
         return Response(status_code=401)
 
@@ -276,6 +285,9 @@ async def unregister_pass(
     if not check_authentification_token(authorization):
         return Response(status_code=401)
 
+    with (settings.log_file_path / "apple_wallet_web_service_unregister.log").open(mode="a") as output:
+        output.write(f"Unregister Event for: {deviceLibraryIdentitfier=}, {passTypeIdentifier=}, {serialNumber=}\n")
+
     statement = select(ApplePassRegistry).where(
         ApplePassRegistry.deviceLibraryIdentitfier == deviceLibraryIdentitfier
         and ApplePassRegistry.passTypeIdentifier == passTypeIdentifier
@@ -323,6 +335,9 @@ async def send_updated_pass(
     if not check_authentification_token(authorization):
         return Response(status_code=401)
 
+    with (settings.log_file_path / "apple_wallet_web_service_unregister.log").open(mode="a") as output:
+        output.write(f"Pass Update Request Event for: {passTypeIdentifier=}, {serialNumber=}\n")
+
     statement = select(ApplePassData).where(
         ApplePassData.passTypeIdentifier == passTypeIdentifier
         and ApplePassData.serialNumber == serialNumber
@@ -369,7 +384,7 @@ async def device_log(
     """
 
     print(f"logs: {data.logs=}")
-    logfile = settings.log_file_path
+    logfile = settings.log_file_path / "apple_wallet_web_service_report.log"
 
     with logfile.open(mode="a") as output:
         for line in data.logs:

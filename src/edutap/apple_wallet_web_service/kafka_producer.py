@@ -1,13 +1,14 @@
+from .config import AppleWalletWebServiceSettings
 from datetime import datetime
 from datetime import timezone
-from edutap.demo_service.config import EduTAPWalletSettings
 from fastapi import logger
 from kafka import KafkaProducer
 from pydantic import BaseModel
+from typing import Literal
 
 
 producer: KafkaProducer = None
-settings = EduTAPWalletSettings()
+settings: AppleWalletWebServiceSettings = AppleWalletWebServiceSettings()
 
 
 def producer_init():
@@ -33,6 +34,7 @@ def send_to_apple_wallet_web_service(
     passTypeIdentifier: str,
     internalPassTypeIdentifier: str,
     serialNumber: str,
+    status: Literal["created", "updated"],
     payload: BaseModel,
     createTime: datetime | None = None,
 ) -> bool:

@@ -47,9 +47,8 @@ class ApplePassData(SQLModel, table=True):  # type: ignore[call-arg]
 
     passTypeIdentifier: str = Field(primary_key=True)
     serialNumber: str = Field(primary_key=True)
-    lastUpdateTag: datetime # = Field(default_factory=datetime.now(tz=timezone.utc))
+    lastUpdateTag: datetime = Field(default=datetime.now(tz=timezone.utc))
     # passStatus: Literal["downloaded", "registered", "unregistered"]
-    # passfile: JSON
     passfile: dict = Field(sa_column=Column(JSON), default={})
     # passFiles: list[LargeBinary]=Field(default=None, sa_column=Column(ARRAY(LargeBinary())))
     pass_files: dict[str, LargeBinary] = Field(default_factory=dict, sa_column=Column(JSON))
@@ -76,8 +75,8 @@ class ApplePassData(SQLModel, table=True):  # type: ignore[call-arg]
         pass_ = Pass.model_validate(self.passfile)
         pass_.files_uuencoded = self.pass_files
         return pass_
-    
-    
+
+      
 class ApplePassRegistry(SQLModel, table=True):  # type: ignore[call-arg]
     """
     Represents the registration of a pass on a device
