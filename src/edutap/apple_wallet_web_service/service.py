@@ -1,4 +1,4 @@
-from .config import AppleWalletWebServiceSettings
+from .config import AppleWalletWebServiceSettings, get_settings
 from .db_models import AppleDeviceRegistry
 from .db_models import ApplePassData
 from .db_models import ApplePassRegistry
@@ -24,13 +24,6 @@ logfile = Path
 registeredAuthTokens = [
     "b5b2597a1c5aa2c6019aa065922785d54760a784b98731c344b4fd1eb6dd8eed",
 ]
-
-
-def get_settings() -> AppleWalletWebServiceSettings:
-    print("Read AppleWalletWebServiceSettings")
-    settings: AppleWalletWebServiceSettings = AppleWalletWebServiceSettings()
-    print(settings)
-    return settings
 
 
 @asynccontextmanager

@@ -49,3 +49,9 @@ class AppleWalletWebServiceSettings(BaseSettings):
 
     apple: AppleWalletSettings = AppleWalletSettings()
     db: DatabaseSettings = DatabaseSettings()
+
+
+def get_settings() -> AppleWalletWebServiceSettings:
+    print("Read AppleWalletWebServiceSettings")
+    print(AppleWalletWebServiceSettings())
+    return AppleWalletWebServiceSettings()
